@@ -33,7 +33,7 @@ int phase1 = 0;
 int phase2 = 0;
 int _step1 = 1; // 0 -- no movement, 1 -- clockwise rotation, -1 -- counterclockwise rotation
 int _step2 = 1; // 0 -- no movement, 1 -- clockwise rotation, -1 -- counterclockwise rotation
-unsigned long timeout = 300; // the timeout [ms] to let the motor to do a rotation
+unsigned long timeout = 30; // the timeout [ms] to let the motor to do a rotation
 unsigned long currTime = 0;
 unsigned long prevTime = 0;
 byte powerByte1_fwd[4] = {B11000000, B01100000, B00110000, B10010000}; // rotation forward
@@ -48,17 +48,34 @@ void loop() {
   int potValue2 = analogRead(potPin2);
   Serial.println(timeout);
   
-  if (potValue1<330) rotByte[4] = powerByte1_rev[4];
-//  {
-//    for (int i=0;i<4;i++){
-//        rotByte[i] = powerByte1_rev[i];
-//    }
-//    }
+  if (potValue1<330)
+    {
+    for (int i=0;i<4;i++){
+        rotByte[i] = powerByte1_rev[i];       
+    }
+    }
 
-  if (potValue1>660) rotByte[4] = powerByte1_fwd[4];
-  if (potValue2<330) rotByte[4] = rotByte[4] + powerByte2_rev[4];
-  if (potValue1>660) rotByte[4] = rotByte[4] + powerByte2_fwd[4];
-     
+  if (potValue1>660)
+    {
+    for (int i=0;i<4;i++){
+        rotByte[i] = powerByte1_fwd[i];       
+    }
+    }
+
+  if (potValue2<330)
+    {
+    for (int i=0;i<4;i++){
+        rotByte[i] = rotByte[i] + powerByte2_rev[i];       
+    }
+    }
+
+  if (potValue2>660)
+    {
+    for (int i=0;i<4;i++){
+        rotByte[4] = rotByte[4] + powerByte2_fwd[4];       
+    }
+    }    
+  currTime = millis();
   if (currTime - prevTime >= timeout) {
 //    int phase = 0;
 //    int pins = 0;
@@ -66,9 +83,11 @@ void loop() {
     for (int j = 0; j < 4; j++){ 
     digitalWrite(latchPin, LOW);
     shiftOut(dataPin, clockPin, LSBFIRST, rotByte[j]); // передаем последовательно на dataPin  
-    Serial.println(rotByte[i]);
+    Serial.println(rotByte[j]);
     digitalWrite(latchPin, HIGH); //"защелкиваем" регистр, тем самым устанавливая значения на выходах    
     delay(timeout);
+    prevTime = currTime;
+  }
   }
 //    Serial.print("timeout [ms] = ");
 //    Serial.print(timeout);
@@ -82,13 +101,13 @@ void loop() {
 //    if (phase1 < 0) phase = 3; // replace 3 for 7 for half-step mode
 //    if (phase2 > 3) phase = 0; // replace 3 for 7 for half-step mode
 //    if (phase2 < 0) phase = 3; // replace 3 for 7 for half-step mode
-//    prevTime = currTime;
+
     Serial.println("yahoo!!");  
 //    for (int i = 0; i < 4; i++) {  
 //      digitalWrite(pins[i], ((motorPhases[phase][i] == 1) ? HIGH : LOW));     
 //    
 //    }
-  }
+
   
 
 }
